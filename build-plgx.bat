@@ -1,0 +1,1 @@
+"C:\Program Files (x86)\KeePass Password Safe 2\KeePass.exe" --plgx-create "%CD%\KeeOTP QR"
