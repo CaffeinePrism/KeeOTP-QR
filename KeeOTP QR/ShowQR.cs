@@ -41,21 +41,38 @@ namespace KeeOTPQR
 
             try
             {
-                char[] delimiter = { ':' };
                 getData(data.ReadString());
-                keyIssuer.Text = title.Split(delimiter)[0];
-                keyTitle.Text = title;
+                string[] titlesplit = title.Split(new char[] { ':' });
+                keyIssuer.Text = titlesplit[0];
+                keyTitle.Text = titlesplit[1];
 
                 buildQR();
-            } catch (ArgumentException e)
+            } catch (Exception e)
             {
-                pictureBox1.Hide();
-                errorMsg.Text = e.Message;
+                if (e is ArgumentException || e is NullReferenceException)
+                {
+                    errorMsg.Show();
+                    errorMsg.Text = "No KeeOTP data!";
+                    groupBox1.Hide();
+                }
+                else
+                    throw;
             }
             
         }
         public void buildQR()
         {
+            bool optionsBlank = (keyIssuer.Text.Trim().Length == 0 || keyTitle.Text.Trim().Length == 0) ? true : false;
+
+            if (optionsBlank)
+            {
+                errorMsg.Show();
+                errorMsg.Text = "QR options cannot be blank";
+            }
+            else
+            {
+                errorMsg.Hide();
+            }
             IBarcodeWriter writer = new BarcodeWriter
             {
                 Format = BarcodeFormat.QR_CODE,
@@ -63,7 +80,7 @@ namespace KeeOTPQR
                 {
                     // assuming the form UI colors will always be sane
                     Background = this.BackColor,
-                    Foreground = this.ForeColor
+                    Foreground = optionsBlank ? Color.Red : this.ForeColor
                 },
                 Options = new ZXing.Common.EncodingOptions
                 {
@@ -81,7 +98,7 @@ namespace KeeOTPQR
             string url = "otpauth://";
             url += type;
             url += "/";
-            url += keyTitle.Text;
+            url += keyIssuer.Text+":"+keyTitle.Text;
             url += "?secret=";
             url += key.ReadString();
             url += "&issuer=";

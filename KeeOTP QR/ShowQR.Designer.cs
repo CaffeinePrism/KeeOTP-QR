@@ -61,11 +61,12 @@
             // errorMsg
             // 
             this.errorMsg.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.errorMsg.Location = new System.Drawing.Point(0, 61);
+            this.errorMsg.Location = new System.Drawing.Point(0, 175);
             this.errorMsg.Name = "errorMsg";
-            this.errorMsg.Size = new System.Drawing.Size(260, 260);
+            this.errorMsg.Size = new System.Drawing.Size(260, 18);
             this.errorMsg.TabIndex = 2;
             this.errorMsg.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.errorMsg.Visible = false;
             // 
             // groupBox1
             // 
@@ -119,10 +120,10 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(434, 321);
+            this.Controls.Add(this.errorMsg);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.banner);
             this.Controls.Add(this.pictureBox1);
-            this.Controls.Add(this.errorMsg);
             this.MaximumSize = new System.Drawing.Size(450, 360);
             this.MinimizeBox = false;
             this.MinimumSize = new System.Drawing.Size(450, 360);
