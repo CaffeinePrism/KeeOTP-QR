@@ -30,19 +30,37 @@ namespace KeeOTPQR
 
             this.title = entry.Strings.Get("Title").ReadString();
             this.data = entry.Strings.Get("otp");
-            getData(data.ReadString());
 
-            IBarcodeWriter writer = new BarcodeWriter {
-                Format = BarcodeFormat.QR_CODE,
-                Options = new ZXing.Common.EncodingOptions
-                {
-                    Width = pictureBox1.Width,
-                    Height = pictureBox1.Height
-                }
-            };
-            var result = writer.Write(buildURL().ReadString());
-            var barcodeBitmap = new Bitmap(result);
-            pictureBox1.Image = barcodeBitmap;
+            banner.Image = KeePass.UI.BannerFactory.CreateBanner(banner.Width,
+                banner.Height,
+                KeePass.UI.BannerStyle.Default,
+                Properties.Resources.qrcode.GetThumbnailImage(32, 32, null, IntPtr.Zero),
+                "QR Code",
+                "QR Code from stored KeeOTP secret");
+
+            this.Icon = host.MainWindow.Icon;
+
+            try
+            {
+                getData(data.ReadString());
+                
+                IBarcodeWriter writer = new BarcodeWriter {
+                    Format = BarcodeFormat.QR_CODE,
+                    Options = new ZXing.Common.EncodingOptions
+                    {
+                        Width = pictureBox1.Width,
+                        Height = pictureBox1.Height
+                    }
+                };
+                var result = writer.Write(buildURL().ReadString());
+                var barcodeBitmap = new Bitmap(result);
+                pictureBox1.Image = barcodeBitmap;
+            }
+            catch (Exception) {
+                // TODO: be smarter with errors
+                pictureBox1.Hide();
+                label1.Text = "ohnoez D:";
+            }
         }
         public ProtectedString buildURL()
         {
@@ -103,6 +121,11 @@ namespace KeeOTPQR
             MemoryStream ms = new MemoryStream(byteArrayIn);
             Image returnImage = Image.FromStream(ms);
             return returnImage;
+        }
+
+        private void ShowQR_Load(object sender, EventArgs e)
+        {
+
         }
     }
 }
