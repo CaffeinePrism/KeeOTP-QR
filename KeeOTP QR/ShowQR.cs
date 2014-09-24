@@ -11,12 +11,11 @@ namespace KeeOTPQR
 {
     public partial class ShowQR : Form
     {
-        const string keyParameter = "key";
-        const string typeParameter = "type";
-
         private readonly KeePassLib.PwEntry entry;
         private readonly IPluginHost host;
         private string title;
+        private string size = "6";
+        private string step = "30";
         private string type = "totp";
         private ProtectedString data;
         private ProtectedString key;
@@ -42,37 +41,55 @@ namespace KeeOTPQR
 
             try
             {
+                char[] delimiter = { ':' };
                 getData(data.ReadString());
-                
-                IBarcodeWriter writer = new BarcodeWriter {
-                    Format = BarcodeFormat.QR_CODE,
-                    Options = new ZXing.Common.EncodingOptions
-                    {
-                        Width = pictureBox1.Width,
-                        Height = pictureBox1.Height
-                    }
-                };
-                var result = writer.Write(buildURL().ReadString());
-                var barcodeBitmap = new Bitmap(result);
-                pictureBox1.Image = barcodeBitmap;
-            }
-            catch (Exception) {
-                // TODO: be smarter with errors
+                keyIssuer.Text = title.Split(delimiter)[0];
+                keyTitle.Text = title;
+
+                buildQR();
+            } catch (ArgumentException e)
+            {
                 pictureBox1.Hide();
-                label1.Text = "ohnoez D:";
+                errorMsg.Text = e.Message;
             }
+            
+        }
+        public void buildQR()
+        {
+            IBarcodeWriter writer = new BarcodeWriter
+            {
+                Format = BarcodeFormat.QR_CODE,
+                Renderer = new ZXing.Rendering.BitmapRenderer
+                {
+                    // assuming the form UI colors will always be sane
+                    Background = this.BackColor,
+                    Foreground = this.ForeColor
+                },
+                Options = new ZXing.Common.EncodingOptions
+                {
+                    Width = pictureBox1.Width,
+                    Height = pictureBox1.Height
+                }
+            };
+            var result = writer.Write(buildURL().ReadString());
+            var barcodeBitmap = new Bitmap(result);
+            pictureBox1.Image = barcodeBitmap;
         }
         public ProtectedString buildURL()
         {
-            char[] delimiter = { ':' };
+            // TODO: support keepass's built in {HMACOTP}
             string url = "otpauth://";
             url += type;
             url += "/";
-            url += title;
+            url += keyTitle.Text;
             url += "?secret=";
             url += key.ReadString();
             url += "&issuer=";
-            url += title.Split(delimiter)[0];
+            url += keyIssuer.Text;
+            url += "&digits=";
+            url += size;
+            url += "&period=";
+            url += step;
 
             return new ProtectedString(true, url);
         }
@@ -80,12 +97,16 @@ namespace KeeOTPQR
         {
             NameValueCollection parameters = ParseQueryString(data);
 
-            if (parameters[keyParameter] == null)
+            if (parameters["key"] == null)
                 throw new ArgumentException("Must have a key in the data");
 
-            this.key = new ProtectedString(true, parameters[keyParameter]);
-            if (parameters[typeParameter] != null)
-                this.type = parameters[typeParameter];
+            this.key = new ProtectedString(true, parameters["key"]);
+            if (parameters["type"] != null)
+                this.type = parameters["type"];
+            if (parameters["size"] != null)
+                this.size = parameters["size"];
+            if (parameters["step"] != null)
+                this.step = parameters["step"];
         }
 
         /// <remarks>
@@ -122,10 +143,14 @@ namespace KeeOTPQR
             Image returnImage = Image.FromStream(ms);
             return returnImage;
         }
-
-        private void ShowQR_Load(object sender, EventArgs e)
+        private void keyIssuer_TextChanged(object sender, EventArgs e)
         {
+            buildQR();
+        }
 
+        private void keyTitle_TextChanged(object sender, EventArgs e)
+        {
+            buildQR();
         }
     }
 }
